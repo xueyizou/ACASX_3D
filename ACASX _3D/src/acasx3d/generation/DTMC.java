@@ -15,15 +15,15 @@ import sim.util.Double2D;
  * @author viki
  *
  */
-public class ACASX3DDTMC
+public class DTMC
 {
-	public static final int nr = 61;//40
-	public static final int nrv= 61;//100
-	public static final int ntheta= 36;//36
-	
 	public static final double UPPER_R=12200;//20000
 	public static final double UPPER_RV=610;//1000
 	public static final double UPPER_THETA=180.0;
+	
+	public static final int nr = 61;//61
+	public static final int nrv= 61;//61
+	public static final int ntheta= 36;//36
 	
 	public static final double rRes = UPPER_R/nr;
 	public static final double rvRes = UPPER_RV/nrv;
@@ -33,13 +33,13 @@ public class ACASX3DDTMC
 	public final static double WHITE_NOISE_SDEV_Angle=2.0;
 
 	private final int numUStates= (nr+1)*(nrv+1)*(2*ntheta+1);
-	private ACASX3DUState[] uStates= new ACASX3DUState[numUStates];
+	private State_UCtrl[] uStates= new State_UCtrl[numUStates];
 	
 
 	private ArrayList<ThreeTuple<Double, Double, Double>> sigmaPoints1 = new ArrayList<>();
 	private ArrayList<ThreeTuple<Double, Double, Double>> sigmaPoints2 = new ArrayList<>();
 	
-	public ACASX3DDTMC() 
+	public DTMC() 
 	{		
 		for(int rIdx=0; rIdx<=nr;rIdx++)//
 		{
@@ -47,7 +47,7 @@ public class ACASX3DDTMC
 			{
 				for(int thetaIdx=-ntheta; thetaIdx<=ntheta;thetaIdx++)
 				{
-					ACASX3DUState state = new ACASX3DUState(rIdx, rvIdx, thetaIdx);							
+					State_UCtrl state = new State_UCtrl(rIdx, rvIdx, thetaIdx);							
 					uStates[state.getOrder()]=state;						
 				}
 			}
@@ -70,17 +70,17 @@ public class ACASX3DDTMC
 	 * Get the set of states associated with the DTMC. 
 	 * @return the set of states associated with the DTMC
 	 */
-	public ACASX3DUState[] states()
+	public State_UCtrl[] states()
 	{		
 		return uStates;
 	}
 
 	/*white noise along r and perpendicular to r*/
-	public Map<ACASX3DUState,Double> getTransitionStatesAndProbs(ACASX3DUState ustate)
+	public Map<State_UCtrl,Double> getTransitionStatesAndProbs(State_UCtrl ustate)
 	{
-		Map<ACASX3DUState, Double> TransitionStatesAndProbs = new LinkedHashMap<ACASX3DUState,Double>();
+		Map<State_UCtrl, Double> TransitionStatesAndProbs = new LinkedHashMap<State_UCtrl,Double>();
 
-		ArrayList<AbstractMap.SimpleEntry<ACASX3DUState, Double>> nextStateMapProbabilities = new ArrayList<>();
+		ArrayList<AbstractMap.SimpleEntry<State_UCtrl, Double>> nextStateMapProbabilities = new ArrayList<>();
 		
 		for(ThreeTuple<Double, Double, Double> sigmaPoint : sigmaPoints1)
 		{
@@ -136,18 +136,18 @@ public class ACASX3DDTMC
 						int thetaIdx = (k==0? thetaIdxL : thetaIdxL+1);
 						int thetaIdxP= thetaIdx<-ntheta? -ntheta: (thetaIdx>ntheta? ntheta : thetaIdx);
 						
-						ACASX3DUState nextState= new ACASX3DUState(rIdxP, rvIdxP, thetaIdxP);
+						State_UCtrl nextState= new State_UCtrl(rIdxP, rvIdxP, thetaIdxP);
 						double probability= sigmaP*(1-Math.abs(rIdx-rP/rRes))*(1-Math.abs(rvIdx-rvP/rvRes))*(1-Math.abs(thetaIdx-thetaP/thetaRes));
-						nextStateMapProbabilities.add(new SimpleEntry<ACASX3DUState, Double>(nextState,probability) );
+						nextStateMapProbabilities.add(new SimpleEntry<State_UCtrl, Double>(nextState,probability) );
 					}
 				}
 			}	
 			
 		}			
 
-		for(AbstractMap.SimpleEntry<ACASX3DUState, Double> nextStateMapProb :nextStateMapProbabilities)
+		for(AbstractMap.SimpleEntry<State_UCtrl, Double> nextStateMapProb :nextStateMapProbabilities)
 		{	
-			ACASX3DUState nextState=nextStateMapProb.getKey();
+			State_UCtrl nextState=nextStateMapProb.getKey();
 			if(TransitionStatesAndProbs.containsKey(nextState))
 			{				
 				TransitionStatesAndProbs.put(nextState, TransitionStatesAndProbs.get(nextState)+nextStateMapProb.getValue());

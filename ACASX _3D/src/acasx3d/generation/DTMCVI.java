@@ -7,26 +7,26 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 
-public class DTMCValueIteration
+public class DTMCVI
 {
-	private ACASX3DUState[] ustates;
+	private State_UCtrl[] ustates;
 	
-	private final int T=MDPValueIteration.T;
+	private final int T=MDPVI.T;
 	
 	private final double COLLISION_R=500;
 
-	private final int numUStates=(ACASX3DDTMC.nr+1)*(ACASX3DDTMC.nrv+1)*(2*ACASX3DDTMC.ntheta+1);
+	private final int numUStates=(DTMC.nr+1)*(DTMC.nrv+1)*(2*DTMC.ntheta+1);
 	
 	private double[][] U= new double[T+1][numUStates];
 
 	
-	public DTMCValueIteration(ACASX3DDTMC dtmc) 
+	public DTMCVI(DTMC dtmc) 
 	{
 		ustates=dtmc.states();
 		//initialisation
 		for (int i=0; i<numUStates;i++)
 		{
-			ACASX3DUState s=ustates[i];
+			State_UCtrl s=ustates[i];
 			if(s.getR()<=COLLISION_R)
 			{
 				U[0][i]=1.0;
@@ -38,7 +38,7 @@ public class DTMCValueIteration
 			
 		}
 
-		Map<ACASX3DUState,Double> TransitionStatesAndProbs;
+		Map<State_UCtrl,Double> TransitionStatesAndProbs;
 		
 		// repeat				
 		for(int iteration=1;iteration<=T;iteration++) 
@@ -46,7 +46,7 @@ public class DTMCValueIteration
 			System.out.println(iteration);		
 			for (int i=0; i<numUStates;i++)
 			{
-				ACASX3DUState s=ustates[i];
+				State_UCtrl s=ustates[i];
 				assert (s.getOrder()==i);
 			
 				double prob=0;	
@@ -54,10 +54,10 @@ public class DTMCValueIteration
 				{
 					TransitionStatesAndProbs= dtmc.getTransitionStatesAndProbs(s);		
 					
-					Set<Entry<ACASX3DUState,Double>> entrySet = TransitionStatesAndProbs.entrySet();							
-					for (Entry<ACASX3DUState,Double> entry : entrySet) 
+					Set<Entry<State_UCtrl,Double>> entrySet = TransitionStatesAndProbs.entrySet();							
+					for (Entry<State_UCtrl,Double> entry : entrySet) 
 					{						
-						ACASX3DUState nextState = entry.getKey();
+						State_UCtrl nextState = entry.getKey();
 						int nextStateOrder = nextState.getOrder();
 						prob += entry.getValue() * U[iteration-1][nextStateOrder];
 					}

@@ -8,15 +8,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 
-public class MDPValueIteration
+public class MDPVI
 {
-	private ACASX3DMDP mdp;
+	private MDP mdp;
 	
 	public static final int T=20;
 	
-	private ACASX3DCState[] states;
+	private State_Ctrl[] states;
 
-	private final int numCStates=(2*ACASX3DMDP.nh+1)*(2*ACASX3DMDP.noVy+1)*(2*ACASX3DMDP.niVy+1)*(ACASX3DMDP.nra);
+	private final int numCStates=(2*MDP.nh+1)*(2*MDP.noVy+1)*(2*MDP.niVy+1)*(MDP.nra);
 	
 	private double[][] U= new double[T+2][numCStates];//U[T+1] is for the K-step expected cost when k>T (i.e. k>K), denoted JkBar
 
@@ -25,7 +25,7 @@ public class MDPValueIteration
 	 * 
 	 * @param gamma discount &gamma; to be used.
 	 */
-	public MDPValueIteration(ACASX3DMDP mdp, double gamma,double epsilon) 
+	public MDPVI(MDP mdp, double gamma,double epsilon) 
 	{
 		this.mdp=mdp;
 		if (gamma > 1.0 || gamma <= 0.0) 
@@ -42,12 +42,12 @@ public class MDPValueIteration
 		//initialisation
 		for (int i=0; i<numCStates;i++)
 		{
-			ACASX3DCState s=states[i];
+			State_Ctrl s=states[i];
 			U[0][i]=mdp.reward(s, -1);
 			U[T+1][i]=0;
 		}
 
-		Map<ACASX3DCState,Double> TransitionStatesAndProbs;
+		Map<State_Ctrl,Double> TransitionStatesAndProbs;
 		double[] JkBar= new double[numCStates];
 		// repeat				
 		for(int iteration=1;iteration<=T;iteration++) 
@@ -55,7 +55,7 @@ public class MDPValueIteration
 			System.out.println(iteration);		
 			for (int i=0; i<numCStates;i++)
 			{
-				ACASX3DCState s=states[i];
+				State_Ctrl s=states[i];
 				if(s.getOrder()!=i)
 				{
 					System.err.println("error happens in valueIteration() + s.getOrder()!=i");
@@ -70,10 +70,10 @@ public class MDPValueIteration
 					double aSum2=mdp.reward(s, a);	
 					TransitionStatesAndProbs= mdp.getTransitionStatesAndProbs(s, a);		
 					
-					Set<Entry<ACASX3DCState,Double>> entrySet = TransitionStatesAndProbs.entrySet();							
-					for (Entry<ACASX3DCState,Double> entry : entrySet) 
+					Set<Entry<State_Ctrl,Double>> entrySet = TransitionStatesAndProbs.entrySet();							
+					for (Entry<State_Ctrl,Double> entry : entrySet) 
 					{						
-						ACASX3DCState nextState = entry.getKey();
+						State_Ctrl nextState = entry.getKey();
 						int nextStateOrder = nextState.getOrder();
 						aSum1 += entry.getValue() * gamma *  U[iteration-1][nextStateOrder];
 						aSum2 += entry.getValue() * gamma *  U[T+1][nextStateOrder];
@@ -99,19 +99,19 @@ public class MDPValueIteration
 	}
 		
 
-	public double getQValue(int k,ACASX3DCState state, int action) 
+	public double getQValue(int k,State_Ctrl state, int action) 
 	{	
 		double QValue = 0;
-		Map<ACASX3DCState,Double> TransitionStatesAndProbs= mdp.getTransitionStatesAndProbs(state, action);
-		Set<Entry<ACASX3DCState,Double>> entrySet = TransitionStatesAndProbs.entrySet();
+		Map<State_Ctrl,Double> TransitionStatesAndProbs= mdp.getTransitionStatesAndProbs(state, action);
+		Set<Entry<State_Ctrl,Double>> entrySet = TransitionStatesAndProbs.entrySet();
 
-		for (Entry<ACASX3DCState,Double> entry : entrySet) 
+		for (Entry<State_Ctrl,Double> entry : entrySet) 
 		{
 			if(entry.getValue()>1)
 			{
 				System.err.println(entry.getValue()+"greater than 1");
 			}
-			ACASX3DCState nextState = entry.getKey();
+			State_Ctrl nextState = entry.getKey();
 			int nextStateOrder=nextState.getOrder();
 			QValue += entry.getValue()*  U[k-1][nextStateOrder];
 		
@@ -144,7 +144,7 @@ public class MDPValueIteration
             {
             	for (int i=0; i<numCStates;i++)
     			{
-    				ACASX3DCState s=states[i];
+    				State_Ctrl s=states[i];
     				ArrayList<Integer> actions=mdp.actions(s);
 					indexFileWriter.write(index+"\n");        			
         			for (int a :actions ) 

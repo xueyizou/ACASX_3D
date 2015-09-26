@@ -1,6 +1,6 @@
 package acasx3d.generation;
 
-public class ACASX3DUtils 
+public class Utils 
 {
 	
 	public static double getActionV(int actionCode)

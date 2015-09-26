@@ -1,6 +1,6 @@
 package acasx3d.generation;
 
-public class ACASX3DUState//uncontrolled state
+public class State_UCtrl
 {
 	private final double r;
 	private final double rv;
@@ -8,16 +8,16 @@ public class ACASX3DUState//uncontrolled state
 	private final int order;
 	private final int hashCode;
 	
-	public ACASX3DUState(int rIdx, int rvIdx, int thetaIdx)
+	public State_UCtrl(int rIdx, int rvIdx, int thetaIdx)
 	{ 
 
-		this.r= ACASX3DDTMC.rRes*rIdx;
-		this.rv= ACASX3DDTMC.rvRes*rvIdx;
-		this.theta = ACASX3DDTMC.thetaRes*thetaIdx;
+		this.r= DTMC.rRes*rIdx;
+		this.rv= DTMC.rvRes*rvIdx;
+		this.theta = DTMC.thetaRes*thetaIdx;
 
-		this.order=rIdx*(ACASX3DDTMC.nrv+1)*(2*ACASX3DDTMC.ntheta+1)
-				+ rvIdx*(2*ACASX3DDTMC.ntheta+1)
-				+ (thetaIdx+ACASX3DDTMC.ntheta);
+		this.order=rIdx*(DTMC.nrv+1)*(2*DTMC.ntheta+1)
+				+ rvIdx*(2*DTMC.ntheta+1)
+				+ (thetaIdx+DTMC.ntheta);
 		this.hashCode=order;
 	}
 
@@ -41,9 +41,9 @@ public class ACASX3DUState//uncontrolled state
 			return true;
 		}
 		
-		if(obj !=null && obj.getClass()==ACASX3DUState.class)
+		if(obj !=null && obj.getClass()==State_UCtrl.class)
 		{
-			ACASX3DUState state = (ACASX3DUState)obj;
+			State_UCtrl state = (State_UCtrl)obj;
 			if(this.getR()==state.getR()
 					&& this.getRv()==state.getRv()
 					&& this.getTheta() == state.getTheta())

@@ -7,59 +7,84 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+
 import sim.util.Double2D;
 import sim.util.Double3D;
-import acasx3d.generation.ACASX3DCState;
-import acasx3d.generation.ACASX3DDTMC;
-import acasx3d.generation.ACASX3DMDP;
-import acasx3d.generation.ACASX3DUState;
-import acasx3d.generation.ACASX3DUtils;
-import acasx3d.generation.MDPValueIteration;
+import acasx3d.generation.State_Ctrl;
+import acasx3d.generation.DTMC;
+import acasx3d.generation.MDP;
+import acasx3d.generation.State_UCtrl;
+import acasx3d.generation.Utils;
+import acasx3d.generation.MDPVI;
 
 /**
  * @author Xueyi
  *
  */
-public class ACASX3D 
+public class ACASX3D_MultiThreats 
 {
 	private LookupTable3D lookupTable3D;
 	
 	private int lastRA=0;//"COC"
 	private Double3D ownshipLoc;
 	private Double3D ownshipVel;
-	private Double3D intruderLoc;
-	private Double3D intruderVel;
+	private Double3D[] intrudersLocs;
+	private Double3D[] intrudersVels;
 	
-	public ACASX3D()
+	public ACASX3D_MultiThreats()
 	{
 		lookupTable3D=LookupTable3D.getInstance();			
 	}	
 	
-	public void update(Double3D ownshipLoc, Double3D ownshipVel, Double3D intruderLoc, Double3D intruderVel, int lastRA) 
+	public void update(Double3D ownshipLoc, Double3D ownshipVel, Double3D[] intrudersLocs, Double3D[] intrudersVels, int lastRA) 
 	{
+		if(intrudersLocs.length!=intrudersVels.length)
+		{
+			System.err.println("the size of intrudersLocs should be equal to the size of intrudersVels!");
+			return;
+		}
 		this.ownshipLoc = ownshipLoc;	
 		this.ownshipVel= ownshipLoc;
-		this.intruderLoc = intruderLoc;	
-		this.intruderVel= intruderLoc;
+		this.intrudersLocs = intrudersLocs;	
+		this.intrudersVels= intrudersLocs;
 		this.lastRA = lastRA;
 	}
 	
 	public int execute()
 	{
-		Double2D vctDistance = new Double2D(intruderLoc.x-ownshipLoc.x, intruderLoc.z-ownshipLoc.z);
-		double r=vctDistance.length();
-		double h=(intruderLoc.y-ownshipLoc.y);
-		
 		Map<Integer, Double> qValuesMap = new TreeMap<>();
-		if(Math.abs(h)<=ACASX3DMDP.UPPER_H && r<=ACASX3DDTMC.UPPER_R)
+		for(int i=0; i<intrudersLocs.length; ++i)
 		{
-			Map<Integer, Double> entryTimeDistribution =calculateEntryTimeDistributionDTMC();						
-			qValuesMap = calculateQValuesMap(entryTimeDistribution);			
+			Double2D vctDistance = new Double2D(intrudersLocs[i].x-ownshipLoc.x, intrudersLocs[i].z-ownshipLoc.z);
+			double r=vctDistance.length();
+			double h=(intrudersLocs[i].y-ownshipLoc.y);
+			
+			
+			if(Math.abs(h)<=MDP.UPPER_H && r<=DTMC.UPPER_R)
+			{
+				Map<Integer, Double> entryTimeDistribution =calculateEntryTimeDistributionDTMC(intrudersLocs[i],intrudersVels[i]);						
+				Map<Integer, Double> qValuesMap2 = calculateQValuesMap(intrudersLocs[i],intrudersVels[i], entryTimeDistribution);
+				for (Integer action : qValuesMap2.keySet()) 
+				{
+					if(qValuesMap.containsKey(action))
+					{
+						double a=qValuesMap.get(action);
+						double b=qValuesMap2.get(action);
+						qValuesMap.put(action, Math.min(a, b));
+//						qValuesMap.put(action, a+b);
+					}
+					else
+					{
+						qValuesMap.put(action, qValuesMap2.get(action));						
+					}
+				}						
+			}
+			else
+			{
+				continue;			
+			}		
 		}
-		else
-		{
-			return 0;				
-		}		
+		
 		
 		
 		double maxQValue=Double.NEGATIVE_INFINITY;
@@ -78,7 +103,7 @@ public class ACASX3D
 		return lastRA;
 	}
 
-	private Map<Integer, Double> calculateEntryTimeDistributionDTMC()
+	private Map<Integer, Double> calculateEntryTimeDistributionDTMC(Double3D intruderLoc, Double3D intruderVel)
 	{
 		return calculateEntryTimeDistributionDTMC(ownshipLoc, ownshipVel, intruderLoc, intruderVel);
 
@@ -101,15 +126,15 @@ public class ACASX3D
  	   	}
 		double theta = Math.toDegrees(alpha);
 		
-		double rRes=ACASX3DDTMC.rRes;
-		double rvRes=ACASX3DDTMC.rvRes;
-		double thetaRes=ACASX3DDTMC.thetaRes;
+		double rRes=DTMC.rRes;
+		double rvRes=DTMC.rvRes;
+		double thetaRes=DTMC.thetaRes;
 		
 		ArrayList<AbstractMap.SimpleEntry<Integer, Double>> entryTimeMapProbs = new ArrayList<AbstractMap.SimpleEntry<Integer, Double>>();
 		Map<Integer, Double> entryTimeDistribution = new TreeMap<>();// must be a sorted map
 
-		assert (r<=ACASX3DDTMC.UPPER_R);
-		assert (rv<=ACASX3DDTMC.UPPER_RV);
+		assert (r<=DTMC.UPPER_R);
+		assert (rv<=DTMC.UPPER_RV);
 		assert (alpha>=-180 && alpha<=180);
 	
 		int rIdxL = (int)Math.floor(r/rRes);
@@ -118,20 +143,20 @@ public class ACASX3D
 		for(int i=0;i<=1;i++)
 		{
 			int rIdx = (i==0? rIdxL : rIdxL+1);
-			int rIdxP= rIdx< 0? 0: (rIdx>ACASX3DDTMC.nr? ACASX3DDTMC.nr : rIdx);			
+			int rIdxP= rIdx< 0? 0: (rIdx>DTMC.nr? DTMC.nr : rIdx);			
 			for(int j=0;j<=1;j++)
 			{
 				int rvIdx = (j==0? rvIdxL : rvIdxL+1);
-				int rvIdxP= rvIdx<0? 0: (rvIdx>ACASX3DDTMC.nrv? ACASX3DDTMC.nrv : rvIdx);
+				int rvIdxP= rvIdx<0? 0: (rvIdx>DTMC.nrv? DTMC.nrv : rvIdx);
 				for(int k=0;k<=1;k++)
 				{
 					int thetaIdx = (k==0? thetaIdxL : thetaIdxL+1);
-					int thetaIdxP= thetaIdx<-ACASX3DDTMC.ntheta? -ACASX3DDTMC.ntheta: (thetaIdx>ACASX3DDTMC.ntheta? ACASX3DDTMC.ntheta : thetaIdx);
+					int thetaIdxP= thetaIdx<-DTMC.ntheta? -DTMC.ntheta: (thetaIdx>DTMC.ntheta? DTMC.ntheta : thetaIdx);
 					
-					ACASX3DUState approxUState= new ACASX3DUState(rIdxP, rvIdxP, thetaIdxP);
+					State_UCtrl approxUState= new State_UCtrl(rIdxP, rvIdxP, thetaIdxP);
 					int approxUStateOrder = approxUState.getOrder();
 					double probability= (1-Math.abs(rIdx-r/rRes))*(1-Math.abs(rvIdx-rv/rvRes))*(1-Math.abs(thetaIdx-theta/thetaRes));
-					for(int t=0;t<=MDPValueIteration.T;t++)
+					for(int t=0;t<=MDPVI.T;t++)
 					{
 						entryTimeMapProbs.add(new SimpleEntry<Integer, Double>(t,probability*lookupTable3D.entryTimeDistributionArr.get((t*lookupTable3D.numUStates)+ approxUStateOrder)) );
 					}
@@ -152,24 +177,24 @@ public class ACASX3D
 			}
 			entryTimeLessThanTProb+=entryTime_prob.getValue();
 		}
-		entryTimeDistribution.put(MDPValueIteration.T+1, 1-entryTimeLessThanTProb);
+		entryTimeDistribution.put(MDPVI.T+1, 1-entryTimeLessThanTProb);
 		return entryTimeDistribution;
 	}
 	
-	private Map<Integer, Double> calculateQValuesMap(Map<Integer, Double> entryTimeDistribution)
+	private Map<Integer, Double> calculateQValuesMap(Double3D intruderLoc, Double3D intruderVel, Map<Integer, Double> entryTimeDistribution)
 	{
 		double h=(intruderLoc.y-ownshipLoc.y);
 		double oVy=ownshipVel.y;
 		double iVy=intruderVel.y;
 //		state.information=String.format( "(%.1f, %.1f, %.1f, %d)",h,oVy,iVy,ra);
 		
-		double hRes=ACASX3DMDP.hRes;
-		double oVRes=ACASX3DMDP.oVRes;
-		double iVRes=ACASX3DMDP.iVRes;
+		double hRes=MDP.hRes;
+		double oVRes=MDP.oVRes;
+		double iVRes=MDP.iVRes;
 		
-		assert (Math.abs(h)<=ACASX3DMDP.UPPER_H);
-		assert (Math.abs(oVy)<=ACASX3DMDP.UPPER_VY);
-		assert (Math.abs(iVy)<=ACASX3DMDP.UPPER_VY);
+		assert (Math.abs(h)<=MDP.UPPER_H);
+		assert (Math.abs(oVy)<=MDP.UPPER_VY);
+		assert (Math.abs(iVy)<=MDP.UPPER_VY);
 		assert (lastRA>=0);
 		
 		Map<Integer, Double> qValuesMap = new TreeMap<>();
@@ -181,17 +206,17 @@ public class ACASX3D
 		for(int i=0;i<=1;i++)
 		{
 			int hIdx = (i==0? hIdxL : hIdxL+1);
-			int hIdxP= hIdx< -ACASX3DMDP.nh? -ACASX3DMDP.nh: (hIdx>ACASX3DMDP.nh? ACASX3DMDP.nh : hIdx);			
+			int hIdxP= hIdx< -MDP.nh? -MDP.nh: (hIdx>MDP.nh? MDP.nh : hIdx);			
 			for(int j=0;j<=1;j++)
 			{
 				int oVyIdx = (j==0? oVyIdxL : oVyIdxL+1);
-				int oVyIdxP= oVyIdx<-ACASX3DMDP.noVy? -ACASX3DMDP.noVy: (oVyIdx>ACASX3DMDP.noVy? ACASX3DMDP.noVy : oVyIdx);
+				int oVyIdxP= oVyIdx<-MDP.noVy? -MDP.noVy: (oVyIdx>MDP.noVy? MDP.noVy : oVyIdx);
 				for(int k=0;k<=1;k++)
 				{
 					int iVyIdx = (k==0? iVyIdxL : iVyIdxL+1);
-					int iVyIdxP= iVyIdx<-ACASX3DMDP.niVy? -ACASX3DMDP.niVy: (iVyIdx>ACASX3DMDP.niVy? ACASX3DMDP.niVy : iVyIdx);
+					int iVyIdxP= iVyIdx<-MDP.niVy? -MDP.niVy: (iVyIdx>MDP.niVy? MDP.niVy : iVyIdx);
 					
-					ACASX3DCState approxCState= new ACASX3DCState(hIdxP, oVyIdxP, iVyIdxP, lastRA);
+					State_Ctrl approxCState= new State_Ctrl(hIdxP, oVyIdxP, iVyIdxP, lastRA);
 					int approxCStateOrder = approxCState.getOrder();
 					double probability= (1-Math.abs(hIdx-h/hRes))*(1-Math.abs(oVyIdx-oVy/oVRes))*(1-Math.abs(iVyIdx-iVy/iVRes));
 
@@ -240,13 +265,13 @@ public class ACASX3D
 	
 	public double getActionV(int actionCode)
 	{
-		return ACASX3DUtils.getActionV(actionCode);
+		return Utils.getActionV(actionCode);
 	
 	}
 	
 	public double getActionA(int actionCode)
 	{
-		return ACASX3DUtils.getActionA(actionCode);
+		return Utils.getActionA(actionCode);
 	
 	}
 	

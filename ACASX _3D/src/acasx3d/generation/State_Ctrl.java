@@ -1,6 +1,6 @@
 package acasx3d.generation;
 
-public class ACASX3DCState//controlled state
+public class State_Ctrl
 {
 	private final double h;
 	private final double oVy;
@@ -9,21 +9,21 @@ public class ACASX3DCState//controlled state
 	private final int hashCode;
 	private final int order;
 	
-	public ACASX3DCState(int hIdx, int oVyIdx, int iVyIdx, int raIdx)
+	public State_Ctrl(int hIdx, int oVyIdx, int iVyIdx, int raIdx)
 	{ 
 
-		this.h= ACASX3DMDP.hRes*hIdx;
-		this.oVy= ACASX3DMDP.oVRes*oVyIdx;
-		this.iVy = ACASX3DMDP.iVRes*iVyIdx;
+		this.h= MDP.hRes*hIdx;
+		this.oVy= MDP.oVRes*oVyIdx;
+		this.iVy = MDP.iVRes*iVyIdx;
 		this.ra = raIdx;	
 		
-		int a= hIdx +ACASX3DMDP.nh;
-		int b= oVyIdx +ACASX3DMDP.noVy;		
-		int c= iVyIdx +ACASX3DMDP.niVy;
+		int a= hIdx +MDP.nh;
+		int b= oVyIdx +MDP.noVy;		
+		int c= iVyIdx +MDP.niVy;
 
-		this.order=a*(2*ACASX3DMDP.noVy+1)*(2*ACASX3DMDP.niVy+1)*(ACASX3DMDP.nra)
-					+ b*(2*ACASX3DMDP.niVy+1)*(ACASX3DMDP.nra)
-					+ c*(ACASX3DMDP.nra)
+		this.order=a*(2*MDP.noVy+1)*(2*MDP.niVy+1)*(MDP.nra)
+					+ b*(2*MDP.niVy+1)*(MDP.nra)
+					+ c*(MDP.nra)
 					+ ra;
 
 		this.hashCode=order;
@@ -57,9 +57,9 @@ public class ACASX3DCState//controlled state
 			return true;
 		}
 		
-		if(obj !=null && obj.getClass()==ACASX3DCState.class)
+		if(obj !=null && obj.getClass()==State_Ctrl.class)
 		{
-			ACASX3DCState state = (ACASX3DCState)obj;
+			State_Ctrl state = (State_Ctrl)obj;
 			if(this.getH()==state.getH()
 				&& this.getoVy()==state.getoVy()
 				&& this.getiVy() == state.getiVy()

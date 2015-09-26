@@ -8,15 +8,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import acasx3d.generation.ACASX3DDTMC;
-import acasx3d.generation.ACASX3DMDP;
-import acasx3d.generation.MDPValueIteration;
+import acasx3d.generation.DTMC;
+import acasx3d.generation.MDP;
+import acasx3d.generation.MDPVI;
 
 
 public class LookupTable3D
 {
 	private static LookupTable3D lookupTable3D;
-	private static String generatedFilesPrefix = "/home/xueyi/EclipseWorkSpace/Java/ACASX _3D_UAV/src/acasx3d/generation/generatedFiles/";
+	private static String generatedFilesPrefix = "/home/xueyi/EclipseWorkSpace/Java/ACASX _3D/src/acasx3d/generation/generatedFiles/";
 	
 	public int numCStates;
 	public int numUStates;
@@ -36,13 +36,13 @@ public class LookupTable3D
 		System.out.println("Reading look-up table...!");
 		long startTime = System.currentTimeMillis();		
 	
-		numCStates = (2*ACASX3DMDP.nh+1)*(2*ACASX3DMDP.noVy+1)*(2*ACASX3DMDP.niVy+1)*(ACASX3DMDP.nra);
-		int numEntries1=numCStates*(MDPValueIteration.T+2) + 1;
+		numCStates = (2*MDP.nh+1)*(2*MDP.noVy+1)*(2*MDP.niVy+1)*(MDP.nra);
+		int numEntries1=numCStates*(MDPVI.T+2) + 1;
 
-		numUStates = (ACASX3DDTMC.nr+1)*(ACASX3DDTMC.nrv+1)*(2*ACASX3DDTMC.ntheta+1);
-		int numEntries2=numUStates*(MDPValueIteration.T+1);
+		numUStates = (DTMC.nr+1)*(DTMC.nrv+1)*(2*DTMC.ntheta+1);
+		int numEntries2=numUStates*(MDPVI.T+1);
 		
-		try 
+		try
         {			
 			indexFileReader = new BufferedReader(new InputStreamReader(new FileInputStream(generatedFilesPrefix+"indexFile")));
 			costFileReader = new BufferedReader(new InputStreamReader(new FileInputStream(generatedFilesPrefix+"costFile")));

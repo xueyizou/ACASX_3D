@@ -13,32 +13,32 @@ import java.util.Map;
  * @author viki
  *
  */
-public class ACASX3DMDP
+public class MDP
 {
-
 	//"COC"-->0,"CL25"-->1, "DES25"-->2
 	//"Loop"-->-1
-	public static final int nh = 10;//10
-	public static final int noVy=7;//14
-	public static final int niVy= 7;//14
-	public static final int nra=7;
 	
 	public static final double UPPER_H=600.0;
 	public static final double UPPER_VY=70.0;
+	
+	public static final int nh = 10;//10
+	public static final int noVy=7;//7
+	public static final int niVy= 7;//7
+	public static final int nra=7;
 	
 	public static final double hRes = UPPER_H/nh;
 	public static final double oVRes = UPPER_VY/noVy;
 	public static final double iVRes = UPPER_VY/niVy;
 
 	private final int numCStates= (2*nh+1)*(2*noVy+1)*(2*niVy+1)*nra;
-	private ACASX3DCState[] cStates= new ACASX3DCState[numCStates];
+	private State_Ctrl[] cStates= new State_Ctrl[numCStates];
 	
 	public final static double WHITE_NOISE_SDEV=3.0;
 	private ArrayList<ThreeTuple<Double, Double, Double>> sigmaPointsA = new ArrayList<>();
 	private ArrayList<ThreeTuple<Double, Double, Double>> sigmaPointsB = new ArrayList<>();
 
 	
-	public ACASX3DMDP() 
+	public MDP() 
 	{		
 		for(int hIdx=-nh; hIdx<=nh;hIdx++)//
 		{
@@ -48,7 +48,7 @@ public class ACASX3DMDP
 				{
 					for(int raIdx=0; raIdx<nra;raIdx++)//
 					{
-						ACASX3DCState state = new ACASX3DCState(hIdx, oVyIdx, iVyIdx, raIdx);							
+						State_Ctrl state = new State_Ctrl(hIdx, oVyIdx, iVyIdx, raIdx);							
 						cStates[state.getOrder()]=state;		
 					}	
 				}
@@ -71,7 +71,7 @@ public class ACASX3DMDP
 	 * 
 	 * @return the set of states associated with the Markov decision process.
 	 */
-	public ACASX3DCState[] states()
+	public State_Ctrl[] states()
 	{		
 		return cStates;
 	}
@@ -83,7 +83,7 @@ public class ACASX3DMDP
 	 * @param s the state.
 	 * @return the list of actions for state s.
 	 */
-	public ArrayList<Integer> actions(ACASX3DCState cstate)
+	public ArrayList<Integer> actions(State_Ctrl cstate)
 	{
 		ArrayList<Integer> actions= new ArrayList<Integer>();			
 
@@ -159,13 +159,13 @@ public class ACASX3DMDP
 		return null;
 	}
 	
-	public Map<ACASX3DCState,Double> getTransitionStatesAndProbs(ACASX3DCState cstate, int actionCode)
+	public Map<State_Ctrl,Double> getTransitionStatesAndProbs(State_Ctrl cstate, int actionCode)
 	{
-		Map<ACASX3DCState, Double> TransitionStatesAndProbs = new LinkedHashMap<ACASX3DCState,Double>();
+		Map<State_Ctrl, Double> TransitionStatesAndProbs = new LinkedHashMap<State_Ctrl,Double>();
 
-		double targetV=ACASX3DUtils.getActionV(actionCode);
-		double accel=ACASX3DUtils.getActionA(actionCode);
-		ArrayList<AbstractMap.SimpleEntry<ACASX3DCState, Double>> nextStateMapProbabilities = new ArrayList<>();
+		double targetV=Utils.getActionV(actionCode);
+		double accel=Utils.getActionA(actionCode);
+		ArrayList<AbstractMap.SimpleEntry<State_Ctrl, Double>> nextStateMapProbabilities = new ArrayList<>();
 		
 		if( (accel>0 && targetV>cstate.getoVy() && cstate.getoVy()<UPPER_VY)
 				|| (accel<0 && targetV<cstate.getoVy() && cstate.getoVy()>-UPPER_VY))
@@ -198,9 +198,9 @@ public class ACASX3DMDP
 							int iVzIdx = (k==0? iVyIdxL : iVyIdxL+1);
 							int iVzIdxP= iVzIdx<-niVy? -niVy: (iVzIdx>niVy? niVy : iVzIdx);
 							
-							ACASX3DCState nextState= new ACASX3DCState(hIdxP, oVzIdxP, iVzIdxP, raP);
+							State_Ctrl nextState= new State_Ctrl(hIdxP, oVzIdxP, iVzIdxP, raP);
 							double probability= sigmaP*(1-Math.abs(hIdx-hP/hRes))*(1-Math.abs(oVzIdx-oVyP/oVRes))*(1-Math.abs(iVzIdx-iVyP/iVRes));
-							nextStateMapProbabilities.add(new SimpleEntry<ACASX3DCState, Double>(nextState,probability) );
+							nextStateMapProbabilities.add(new SimpleEntry<State_Ctrl, Double>(nextState,probability) );
 						}
 					}
 				}
@@ -237,9 +237,9 @@ public class ACASX3DMDP
 							int iVyIdx = (k==0? iVyIdxL : iVyIdxL+1);
 							int iVyIdxP= iVyIdx<-niVy? -niVy: (iVyIdx>niVy? niVy : iVyIdx);
 							
-							ACASX3DCState nextState= new ACASX3DCState(hIdxP, oVyIdxP, iVyIdxP,raP);
+							State_Ctrl nextState= new State_Ctrl(hIdxP, oVyIdxP, iVyIdxP,raP);
 							double probability= sigmaP*(1-Math.abs(hIdx-hP/hRes))*(1-Math.abs(oVyIdx-oVyP/oVRes))*(1-Math.abs(iVyIdx-iVyP/iVRes));
-							nextStateMapProbabilities.add(new SimpleEntry<ACASX3DCState, Double>(nextState,probability) );
+							nextStateMapProbabilities.add(new SimpleEntry<State_Ctrl, Double>(nextState,probability) );
 						}
 					}
 				}	
@@ -248,9 +248,9 @@ public class ACASX3DMDP
 			
 		}
 
-		for(AbstractMap.SimpleEntry<ACASX3DCState, Double> nextStateMapProb :nextStateMapProbabilities)
+		for(AbstractMap.SimpleEntry<State_Ctrl, Double> nextStateMapProb :nextStateMapProbabilities)
 		{	
-			ACASX3DCState nextState=nextStateMapProb.getKey();
+			State_Ctrl nextState=nextStateMapProb.getKey();
 			if(TransitionStatesAndProbs.containsKey(nextState))
 			{				
 				TransitionStatesAndProbs.put(nextState, TransitionStatesAndProbs.get(nextState)+nextStateMapProb.getValue());
@@ -266,7 +266,7 @@ public class ACASX3DMDP
 	}
 	
 		
-	public double reward(ACASX3DCState cstate,int actionCode)
+	public double reward(State_Ctrl cstate,int actionCode)
 	{
 		if(actionCode==-1)//terminate 
 		{
