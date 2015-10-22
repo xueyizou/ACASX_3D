@@ -44,9 +44,9 @@ public class ACASX3D_MultiThreats
 			return;
 		}
 		this.ownshipLoc = ownshipLoc;	
-		this.ownshipVel= ownshipLoc;
+		this.ownshipVel= ownshipVel;
 		this.intrudersLocs = intrudersLocs;	
-		this.intrudersVels= intrudersLocs;
+		this.intrudersVels= intrudersVels;
 		this.lastRA = lastRA;
 	}
 	

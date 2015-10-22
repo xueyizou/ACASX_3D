@@ -16,7 +16,7 @@ import acasx3d.generation.MDPVI;
 public class LookupTable3D
 {
 	private static LookupTable3D lookupTable3D;
-	private static String generatedFilesPrefix = "/home/xueyi/EclipseWorkSpace/Java/ACASX _3D/src/acasx3d/generation/generatedFiles/";
+	private static String generatedFilesPrefix = "/home/xueyi/git/ACASX_3D/ACASX _3D/src/acasx3d/generation/generatedFiles/";
 	
 	public int numCStates;
 	public int numUStates;

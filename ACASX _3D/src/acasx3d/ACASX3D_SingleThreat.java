@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+
 import sim.util.Double2D;
 import sim.util.Double3D;
 import acasx3d.generation.State_Ctrl;
@@ -38,9 +39,9 @@ public class ACASX3D_SingleThreat
 	public void update(Double3D ownshipLoc, Double3D ownshipVel, Double3D intruderLoc, Double3D intruderVel, int lastRA) 
 	{
 		this.ownshipLoc = ownshipLoc;	
-		this.ownshipVel= ownshipLoc;
+		this.ownshipVel= ownshipVel;
 		this.intruderLoc = intruderLoc;	
-		this.intruderVel= intruderLoc;
+		this.intruderVel= intruderVel;
 		this.lastRA = lastRA;
 	}
 	
@@ -50,10 +51,12 @@ public class ACASX3D_SingleThreat
 		double r=vctDistance.length();
 		double h=(intruderLoc.y-ownshipLoc.y);
 		
-		Map<Integer, Double> qValuesMap = new TreeMap<>();
+		Map<Integer, Double> qValuesMap;
+		Map<Integer, Double> entryTimeDistribution;
 		if(Math.abs(h)<=MDP.UPPER_H && r<=DTMC.UPPER_R)
 		{
-			Map<Integer, Double> entryTimeDistribution =calculateEntryTimeDistributionDTMC();						
+			entryTimeDistribution =calculateEntryTimeDistributionDTMC();	
+
 			qValuesMap = calculateQValuesMap(entryTimeDistribution);			
 		}
 		else
@@ -61,6 +64,19 @@ public class ACASX3D_SingleThreat
 			return 0;				
 		}		
 		
+//		for(Entry<Integer, Double> entryTime_prob :entryTimeDistribution.entrySet())
+//		{
+//			int t=entryTime_prob.getKey();
+//			double entryTimeProb= entryTime_prob.getValue();	
+//			System.out.println(t+"  "+String.valueOf(entryTimeProb));
+//		}
+		
+//		for(Entry<Integer, Double> action_value :qValuesMap.entrySet())
+//		{
+//			int action=action_value.getKey();
+//			double value= action_value.getValue();	
+//			System.out.println(action+"  "+String.valueOf(value));
+//		}
 		
 		double maxQValue=Double.NEGATIVE_INFINITY;
 		int bestActionCode=0;
@@ -101,6 +117,7 @@ public class ACASX3D_SingleThreat
  	   	}
 		double theta = Math.toDegrees(alpha);
 		
+//		System.out.println(r+"   "+rv+"   "+theta);
 		double rRes=DTMC.rRes;
 		double rvRes=DTMC.rvRes;
 		double thetaRes=DTMC.thetaRes;
@@ -110,7 +127,7 @@ public class ACASX3D_SingleThreat
 
 		assert (r<=DTMC.UPPER_R);
 		assert (rv<=DTMC.UPPER_RV);
-		assert (alpha>=-180 && alpha<=180);
+		assert (theta>=-180 && theta<=180);
 	
 		int rIdxL = (int)Math.floor(r/rRes);
 		int rvIdxL = (int)Math.floor(rv/rvRes);
@@ -131,6 +148,7 @@ public class ACASX3D_SingleThreat
 					State_UCtrl approxUState= new State_UCtrl(rIdxP, rvIdxP, thetaIdxP);
 					int approxUStateOrder = approxUState.getOrder();
 					double probability= (1-Math.abs(rIdx-r/rRes))*(1-Math.abs(rvIdx-rv/rvRes))*(1-Math.abs(thetaIdx-theta/thetaRes));
+//					System.out.println(approxUStateOrder+"("+rIdxP +","+ rvIdxP+","+ thetaIdxP+")    "+probability);
 					for(int t=0;t<=MDPVI.T;t++)
 					{
 						entryTimeMapProbs.add(new SimpleEntry<Integer, Double>(t,probability*lookupTable3D.entryTimeDistributionArr.get((t*lookupTable3D.numUStates)+ approxUStateOrder)) );
@@ -248,6 +266,24 @@ public class ACASX3D_SingleThreat
 	{
 		return Utils.getActionA(actionCode);
 	
+	}
+	
+	
+	public static void main(String[] args)
+	{
+		ACASX3D_SingleThreat acasx = new ACASX3D_SingleThreat();
+	
+	    Double3D ownshipLoc= new Double3D (0.0, 500.0, 0.0);
+	    Double3D ownshipVel = new Double3D(203, 0.0, 0.0);
+	    Double3D intruderLoc = new Double3D(4034, 547.0, 0.0);
+	    Double3D intruderVel= new Double3D (-185, 0.0, 0.0);
+	    int lastRA = 0;
+	    for(lastRA=0; lastRA<7; ++lastRA)
+	    {
+	    	acasx.update( ownshipLoc, ownshipVel,  intruderLoc,  intruderVel, lastRA);
+	        int returnResult = acasx.execute();
+	        System.out.println(returnResult);
+	    }
 	}
 	
 }

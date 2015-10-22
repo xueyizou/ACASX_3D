@@ -261,7 +261,6 @@ public class MDP
 			}		
 			
 		}
-		
 		return TransitionStatesAndProbs;
 	}
 	
