@@ -1,0 +1,83 @@
+package visualization.configuration;
+
+import java.awt.Color;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+public class OwnshipConfigurator extends JPanel
+{
+	private static final long serialVersionUID = 1L;
+	
+	public static Configuration config= Configuration.getInstance();
+	
+	public OwnshipConfigurator() 
+	{	
+		setLayout(null);
+	
+		{
+			JPanel otherPanel = new JPanel();
+			otherPanel.setBackground(Color.LIGHT_GRAY);
+			otherPanel.setBounds(29, 38, 290, 62);
+			add(otherPanel);
+			otherPanel.setLayout(null);
+			
+			JLabel lblVy = new JLabel("VY");
+			lblVy.setBounds(10, 11, 37, 15);
+			otherPanel.add(lblVy);
+				
+			final JLabel vyLabel = new JLabel(""+config.ownshipConfig.ownshipVy);
+			vyLabel.setBounds(226, 11, 58, 15);
+			otherPanel.add(vyLabel);
+		
+			JSlider ownshipVySlider = new JSlider();
+			ownshipVySlider.setBounds(57, 11, 161, 16);
+			otherPanel.add(ownshipVySlider);
+			ownshipVySlider.setSnapToTicks(true);
+			ownshipVySlider.setPaintLabels(true);		
+			ownshipVySlider.setMaximum(58);
+			ownshipVySlider.setMinimum(-67);
+			ownshipVySlider.setValue((int)(config.ownshipConfig.ownshipVy));
+			ownshipVySlider.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					JSlider source = (JSlider) e.getSource();
+					config.ownshipConfig.ownshipVy = source.getValue();
+					vyLabel.setText(""+config.ownshipConfig.ownshipVy);
+
+				}
+			});
+			
+			JLabel lblGs = new JLabel("GS");
+			lblGs.setBounds(10, 32, 37, 15);
+			otherPanel.add(lblGs);
+			
+			final JLabel gsLabel = new JLabel(""+config.ownshipConfig.ownshipGs);
+			gsLabel.setBounds(226, 32, 58, 15);
+			otherPanel.add(gsLabel);
+			
+			JSlider ownshipGsSlider = new JSlider();
+			ownshipGsSlider.setBounds(57, 32, 161, 16);
+			otherPanel.add(ownshipGsSlider);
+			ownshipGsSlider.setSnapToTicks(true);
+			ownshipGsSlider.setPaintLabels(true);		
+			ownshipGsSlider.setMaximum(304);
+			ownshipGsSlider.setValue((int)(config.ownshipConfig.ownshipGs));
+			ownshipGsSlider.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					JSlider source = (JSlider) e.getSource();
+					config.ownshipConfig.ownshipGs = source.getValue();
+					gsLabel.setText(""+config.ownshipConfig.ownshipGs);
+				}
+			});			
+			
+			
+		}
+		
+		
+	
+					
+	}
+
+}
