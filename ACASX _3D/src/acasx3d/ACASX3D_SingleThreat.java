@@ -25,7 +25,7 @@ public class ACASX3D_SingleThreat
 {
 	private LookupTable3D lookupTable3D;
 	
-	private int lastRA=0;//"COC"
+	private int lastRA;
 	private Double3D ownshipLoc;
 	private Double3D ownshipVel;
 	private Double3D intruderLoc;
@@ -61,25 +61,11 @@ public class ACASX3D_SingleThreat
 		}
 		else
 		{
-			return 0;				
+			return -1;				
 		}		
 		
-//		for(Entry<Integer, Double> entryTime_prob :entryTimeDistribution.entrySet())
-//		{
-//			int t=entryTime_prob.getKey();
-//			double entryTimeProb= entryTime_prob.getValue();	
-//			System.out.println(t+"  "+String.valueOf(entryTimeProb));
-//		}
-		
-//		for(Entry<Integer, Double> action_value :qValuesMap.entrySet())
-//		{
-//			int action=action_value.getKey();
-//			double value= action_value.getValue();	
-//			System.out.println(action+"  "+String.valueOf(value));
-//		}
-		
 		double maxQValue=Double.NEGATIVE_INFINITY;
-		int bestActionCode=0;
+		int bestActionCode=-1;
 		Set<Entry<Integer,Double>> entrySet = qValuesMap.entrySet();
 		for (Entry<Integer,Double> entry : entrySet) 
 		{
@@ -269,21 +255,21 @@ public class ACASX3D_SingleThreat
 	}
 	
 	
-	public static void main(String[] args)
-	{
-		ACASX3D_SingleThreat acasx = new ACASX3D_SingleThreat();
-	
-	    Double3D ownshipLoc= new Double3D (0.0, 500.0, 0.0);
-	    Double3D ownshipVel = new Double3D(203, 0.0, 0.0);
-	    Double3D intruderLoc = new Double3D(4034, 547.0, 0.0);
-	    Double3D intruderVel= new Double3D (-185, 0.0, 0.0);
-	    int lastRA = 0;
-	    for(lastRA=0; lastRA<7; ++lastRA)
-	    {
-	    	acasx.update( ownshipLoc, ownshipVel,  intruderLoc,  intruderVel, lastRA);
-	        int returnResult = acasx.execute();
-	        System.out.println(returnResult);
-	    }
-	}
+//	public static void main(String[] args)
+//	{
+//		ACASX3D_SingleThreat acasx = new ACASX3D_SingleThreat();
+//	
+//	    Double3D ownshipLoc= new Double3D (0.0, 500.0, 0.0);
+//	    Double3D ownshipVel = new Double3D(203, 0.0, 0.0);
+//	    Double3D intruderLoc = new Double3D(4034, 547.0, 0.0);
+//	    Double3D intruderVel= new Double3D (-185, 0.0, 0.0);
+//	    int lastRA = 0;
+//	    for(lastRA=0; lastRA<7; ++lastRA)
+//	    {
+//	    	acasx.update( ownshipLoc, ownshipVel,  intruderLoc,  intruderVel, lastRA);
+//	        int returnResult = acasx.execute();
+//	        System.out.println(returnResult);
+//	    }
+//	}
 	
 }

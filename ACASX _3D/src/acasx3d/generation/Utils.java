@@ -5,7 +5,7 @@ public class Utils
 	
 	public static double getActionV(int actionCode)
 	{
-		if(actionCode==-1 )//"Loop"
+		if(actionCode==-1 )//"leaving"
 		{
 			System.err.println("no V in Loop action!");
 			return Double.NaN;
@@ -39,7 +39,7 @@ public class Utils
 	
 	public static double getActionA(int actionCode)
 	{
-		if(actionCode==-1)//"Loop"
+		if(actionCode==-1)//"leaving"
 		{
 			System.err.println("no A in Loop action!");
 			return Double.NaN;

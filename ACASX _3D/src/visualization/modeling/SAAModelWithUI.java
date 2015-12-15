@@ -77,41 +77,42 @@ public class SAAModelWithUI extends GUIState
 				
 				
 				int actionCode = ((Waypoint) obj).getAction();
-				if(actionCode==31||actionCode==33 ||actionCode==35)
+
+				if(actionCode==1||actionCode==3 ||actionCode==5)
 				{//climb					
 					switch(actionCode)
 					{
-					case 31:
+					case 1:
 						col = new Color3f(255,0,0);//CL25
 						scale =3*k;
 						break;
-					case 33:
+					case 3:
 						col = new Color3f(255, 0, 0);//SCL25
 						scale =6*k;
 						break;
-					case 35:
+					case 5:
 						col = new Color3f(255, 0, 0);//SCL42	
 						scale =9*k;
 					}
 				}
-				else if(actionCode==32||actionCode==34 ||actionCode==36)
+				else if(actionCode==2||actionCode==4 ||actionCode==6)
 				{//descend						
 					switch(actionCode)
 					{
-					case 32:
+					case 2:
 						col = new Color3f(0,255,0);//DES25
 						scale =3*k;
 						break;
-					case 34:
+					case 4:
 						col = new Color3f(0, 255, 0);//SDES25
 						scale =6*k;
 						break;
-					case 36:
+					case 6:
 						col = new Color3f(0, 255, 0);//SDES42	
 						scale =9*k;
 					}
 				}
-				else if(actionCode==30)
+				else if(actionCode==0)
 				{//COC
 					col = new Color3f(0, 0, 255);
 					scale = 3*k;

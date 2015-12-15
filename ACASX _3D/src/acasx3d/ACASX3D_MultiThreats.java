@@ -25,7 +25,7 @@ public class ACASX3D_MultiThreats
 {
 	private LookupTable3D lookupTable3D;
 	
-	private int lastRA=0;//"COC"
+	private int lastRA;
 	private Double3D ownshipLoc;
 	private Double3D ownshipVel;
 	private Double3D[] intrudersLocs;
@@ -57,8 +57,7 @@ public class ACASX3D_MultiThreats
 		{
 			Double2D vctDistance = new Double2D(intrudersLocs[i].x-ownshipLoc.x, intrudersLocs[i].z-ownshipLoc.z);
 			double r=vctDistance.length();
-			double h=(intrudersLocs[i].y-ownshipLoc.y);
-			
+			double h=(intrudersLocs[i].y-ownshipLoc.y);			
 			
 			if(Math.abs(h)<=MDP.UPPER_H && r<=DTMC.UPPER_R)
 			{
@@ -83,12 +82,11 @@ public class ACASX3D_MultiThreats
 			{
 				continue;			
 			}		
-		}
-		
+		}		
 		
 		
 		double maxQValue=Double.NEGATIVE_INFINITY;
-		int bestActionCode=0;
+		int bestActionCode=-1;
 		Set<Entry<Integer,Double>> entrySet = qValuesMap.entrySet();
 		for (Entry<Integer,Double> entry : entrySet) 
 		{

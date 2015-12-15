@@ -23,9 +23,7 @@ public class AutoPilot implements Steppable
 	private double SDZ=0;
 	
 	private String normativeMode=null;//normative manoeuvre normativeMode
-	private int acasxActionCode=-999;//action code from collision avoidance algorithm
-
-	
+	private int acasxActionCode=-1;//action code from collision avoidance algorithm	
 
 	public AutoPilot(SimState simstate, UAS uas, Boolean enableWhiteNoise, String mode) 
 	{
@@ -113,7 +111,7 @@ public class AutoPilot implements Steppable
 		hostUAS.setOldVel(new Double3D(vx,vy,vz));
 		hostUAS.setVel(new Double3D(groundVelocity.x, newVy,groundVelocity.y));
 		Waypoint wp = new Waypoint(new Double3D(x, y,z));	
-		wp.setAction(actionCode+30);//30 for ACASX3D
+		wp.setAction(actionCode);
 		return wp;
 	}
 	
@@ -152,6 +150,7 @@ public class AutoPilot implements Steppable
 		hostUAS.setOldVel(new Double3D(vx,vy,vz));
 		hostUAS.setVel(new Double3D(groundVelocity.x, newVy,groundVelocity.y));
 		Waypoint wp = new Waypoint(new Double3D(x , y, z));		
+		wp.setAction(-1);
 		return wp;
 	}
 	

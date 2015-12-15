@@ -21,23 +21,12 @@ public class MDPVI
 	private double[][] U= new double[T+2][numCStates];//U[T+1] is for the K-step expected cost when k>T (i.e. k>K), denoted JkBar
 
 	/**
-	 * Constructor.
-	 * 
-	 * @param gamma discount &gamma; to be used.
+	 * Constructor.	
 	 */
-	public MDPVI(MDP mdp, double gamma,double epsilon) 
+	public MDPVI(MDP mdp) 
 	{
 		this.mdp=mdp;
-		if (gamma > 1.0 || gamma <= 0.0) 
-		{
-			throw new IllegalArgumentException("Gamma must be > 0 and <= 1.0");
-		}
 		
-		if (epsilon < 0.0) 
-		{
-			throw new IllegalArgumentException("epsilon must be >= 0");
-		}
-
 		states=mdp.states();
 		//initialisation
 		for (int i=0; i<numCStates;i++)
@@ -75,8 +64,8 @@ public class MDPVI
 					{						
 						State_Ctrl nextState = entry.getKey();
 						int nextStateOrder = nextState.getOrder();
-						aSum1 += entry.getValue() * gamma *  U[iteration-1][nextStateOrder];
-						aSum2 += entry.getValue() * gamma *  U[T+1][nextStateOrder];
+						aSum1 += entry.getValue() *  U[iteration-1][nextStateOrder];
+						aSum2 += entry.getValue() * U[T+1][nextStateOrder];
 					}
 						
 					if (aSum1 > aMax1) 
@@ -135,7 +124,7 @@ public class MDPVI
             for (int i=0; i<numCStates;i++)//T=k=0
 			{		
 				indexFileWriter.write(index+"\n");    			 	
-				actionFileWriter.write(0+"\n");  //leaving states, using O to avoid arrayIndexOutofRange problem
+				actionFileWriter.write(-1+"\n");  //leaving states, using O to avoid arrayIndexOutofRange problem
 				index++;   
 				costFileWriter.write(U[0][i]+"\n");
 			}

@@ -74,10 +74,10 @@ public class ACASX3DProxy implements Steppable
 		}
 		else
 		{
-			newRA=0;
+			newRA=-1;
 		}
 		hostUAS.getAp().setActionCode(newRA);
-		lastRA=newRA;
+		lastRA= (newRA==-1? 0: newRA);
 	}
 
 	public double calculateCollisionRisk(UAS uas)
@@ -100,10 +100,6 @@ public class ACASX3DProxy implements Steppable
 	public double getActionV(int actionCode) {
 		return acas.getActionV(actionCode);
 	}
-
-
-	public void init() {
-		
-	}	
+	
 	
 }
