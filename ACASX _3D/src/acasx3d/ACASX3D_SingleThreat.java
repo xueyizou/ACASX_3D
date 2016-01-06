@@ -92,16 +92,16 @@ public class ACASX3D_SingleThreat
 		Double2D vctVelocity = new Double2D(intruderVel.x-ownshipVel.x, intruderVel.z-ownshipVel.z);
 		double r=vctDistance.length();
 		double rv=vctVelocity.length();
-		double alpha=vctVelocity.angle()-vctDistance.angle();
-		if(alpha> Math.PI)
+		double theta_in_rad=vctVelocity.angle()-vctDistance.angle();
+		if(theta_in_rad> Math.PI)
  	   	{
-			alpha= -2*Math.PI +alpha; 
+			theta_in_rad= -2*Math.PI +theta_in_rad; 
  	   	}
-		if(alpha<-Math.PI)
+		if(theta_in_rad<-Math.PI)
  	   	{
-			alpha=2*Math.PI+alpha; 
+			theta_in_rad=2*Math.PI+theta_in_rad; 
  	   	}
-		double theta = Math.toDegrees(alpha);
+		double theta = Math.toDegrees(theta_in_rad);
 		
 //		System.out.println(r+"   "+rv+"   "+theta);
 		double rRes=DTMC.rRes;
